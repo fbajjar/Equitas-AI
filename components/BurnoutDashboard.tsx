@@ -1,15 +1,46 @@
 import React, { useState } from 'react';
 import { generateSpecialistReport, BurnoutReport } from '../services/geminiService';
-import { Activity, AlertTriangle, FileText, X, TrendingDown, Clock, Heart, Watch, Eye, Zap } from 'lucide-react';
+import { Activity, AlertTriangle, FileText, X, TrendingDown, Clock, Heart, Watch, Eye, Zap, Lightbulb, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 // Mock Data for Workload Distribution
 const workloadData = [
   { name: 'Eng Team A', assigned: 45, completed: 42, stress: 30 },
-  { name: 'Eng Team B', assigned: 55, completed: 30, stress: 85 }, // High stress
+  { name: 'Eng Team B', assigned: 55, completed: 30, stress: 85 }, // High stress, low completion
   { name: 'Design', assigned: 30, completed: 28, stress: 20 },
   { name: 'QA', assigned: 40, completed: 35, stress: 45 },
   { name: 'Marketing', assigned: 25, completed: 25, stress: 15 },
+];
+
+// Mock Data for Skill Gap Analysis
+const skillGapData = [
+  {
+    id: 1,
+    taskCategory: "Backend API Integration",
+    missedCount: 18,
+    primaryTeam: "Eng Team B",
+    missingSkill: "GraphQL Optimization",
+    urgency: "High",
+    recommendation: "Advanced GraphQL Performance Workshop"
+  },
+  {
+    id: 2,
+    taskCategory: "Automated Testing",
+    missedCount: 12,
+    primaryTeam: "QA Team",
+    missingSkill: "Cypress / E2E Scripting",
+    urgency: "Medium",
+    recommendation: "Modern E2E Testing Certification Course"
+  },
+  {
+    id: 3,
+    taskCategory: "Cloud Infrastructure",
+    missedCount: 7,
+    primaryTeam: "Eng Team A",
+    missingSkill: "Kubernetes Debugging",
+    urgency: "Low",
+    recommendation: "Cloud Native Essentials Training"
+  }
 ];
 
 const BurnoutDashboard: React.FC = () => {
@@ -178,7 +209,63 @@ const BurnoutDashboard: React.FC = () => {
                 </p>
             </div>
         </div>
+      </div>
 
+      {/* Skill Gap Analysis Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 text-amber-600 rounded-lg">
+                    <Lightbulb className="w-5 h-5" />
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800">AI Skill Gap Analysis</h3>
+                    <p className="text-xs text-slate-500">Correlating unfinished tasks with required technical competencies.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div className="p-6 grid md:grid-cols-3 gap-6">
+            {skillGapData.map((gap) => (
+                <div key={gap.id} className="border border-slate-200 rounded-xl p-5 hover:border-indigo-300 transition-colors bg-slate-50/50 hover:bg-white group">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="text-xs font-bold uppercase tracking-wider text-slate-400">{gap.taskCategory}</div>
+                        <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase
+                            ${gap.urgency === 'High' ? 'bg-red-100 text-red-600' : 
+                              gap.urgency === 'Medium' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>
+                            {gap.urgency} Impact
+                        </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                        <div className="text-2xl font-bold text-slate-800 mb-1">{gap.missedCount}</div>
+                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1">
+                            Tasks incomplete in <span className="text-slate-700 font-bold">{gap.primaryTeam}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-sm text-slate-700">
+                            <AlertTriangle className="w-4 h-4 text-amber-500" />
+                            <span>Missing: <strong>{gap.missingSkill}</strong></span>
+                        </div>
+                        
+                        <div className="h-px bg-slate-200"></div>
+
+                        <div className="flex items-start gap-2">
+                             <GraduationCap className="w-4 h-4 text-indigo-600 mt-1" />
+                             <div>
+                                 <div className="text-xs text-slate-400 font-bold uppercase mb-0.5">Recommendation</div>
+                                 <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group-hover:underline">
+                                    {gap.recommendation}
+                                    <ArrowRight className="w-3 h-3" />
+                                 </a>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            ))}
+        </div>
       </div>
 
       {/* Specialist Report Modal */}

@@ -1,9 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { evaluateCandidate, HiringAnalysisResult } from '../services/geminiService';
-import { Upload, Link as LinkIcon, CheckCircle, FileText, Search, Briefcase, FileUp, X } from 'lucide-react';
+import { Upload, Link as LinkIcon, CheckCircle, FileText, Search, Briefcase, FileUp, X, AlertCircle } from 'lucide-react';
 
 const HiringPortal: React.FC = () => {
-  const [resumeText, setResumeText] = useState<string>("");
+  // Store either raw text (for .txt) or base64 data (for .pdf)
+  const [resumeInput, setResumeInput] = useState<{ text?: string; data?: string; mimeType?: string } | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [portfolioLinks, setPortfolioLinks] = useState<string>("");
   const [jobDesc, setJobDesc] = useState<string>("Senior React Engineer with 5+ years experience, familiarity with Tailwind and GenAI.");
@@ -13,30 +14,43 @@ const HiringPortal: React.FC = () => {
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFileName(file.name);
-      // Simulating file parsing. In a real app, this would use pdf.js or similar.
-      // For .txt files, we can actually read it.
-      if (file.type === "text/plain") {
-        const reader = new FileReader();
-        reader.onload = (e) => setResumeText(e.target?.result as string);
-        reader.readAsText(file);
-      } else {
-        // Mock extraction for PDF/Docx in demo environment
-        setResumeText(`[Extracted Content from ${file.name}]\n\nEXPERIENCE\nSenior Developer | 2020-Present\n- Led team of 5.\n- Increased efficiency by 20%.\n\nEDUCATION\nMasters in CS.`);
-      }
+    if (!file) return;
+
+    setUploadedFileName(file.name);
+    setResult(null); // Clear previous results
+
+    if (file.type === "text/plain") {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setResumeInput({ text: e.target?.result as string });
+      };
+      reader.readAsText(file);
+    } else {
+      // For PDF, we read as DataURL to get Base64
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        // Strip the "data:application/pdf;base64," prefix
+        const base64Data = result.split(',')[1];
+        setResumeInput({ 
+          data: base64Data, 
+          mimeType: file.type 
+        });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   const handleAnalyze = async () => {
-    if (!resumeText.trim()) return;
+    if (!resumeInput) return;
     setLoading(true);
     setResult(null);
     try {
-      const data = await evaluateCandidate(resumeText, portfolioLinks, jobDesc);
+      const data = await evaluateCandidate(resumeInput, portfolioLinks, jobDesc);
       setResult(data);
     } catch (e) {
-      alert("Analysis failed. Please try again.");
+      console.error(e);
+      alert("Analysis failed. Please ensure the file is a valid PDF or Text file.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +58,7 @@ const HiringPortal: React.FC = () => {
 
   const clearFile = () => {
     setUploadedFileName(null);
-    setResumeText("");
+    setResumeInput(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -86,12 +100,12 @@ const HiringPortal: React.FC = () => {
                     <FileUp className="w-6 h-6 text-indigo-500" />
                   </div>
                   <p className="text-sm font-medium text-slate-700">Click to upload CV</p>
-                  <p className="text-xs text-slate-400 mt-1">PDF, DOCX, TXT supported</p>
+                  <p className="text-xs text-slate-400 mt-1">PDF or TXT supported</p>
                   <input 
                     type="file" 
                     ref={fileInputRef} 
                     className="hidden" 
-                    accept=".pdf,.docx,.txt"
+                    accept=".pdf,.txt,application/pdf,text/plain"
                     onChange={handleFileUpload}
                   />
                 </div>
@@ -103,7 +117,9 @@ const HiringPortal: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-slate-800">{uploadedFileName}</p>
-                      <p className="text-xs text-slate-500">Ready for analysis</p>
+                      <p className="text-xs text-slate-500">
+                        {resumeInput?.mimeType === 'application/pdf' ? 'PDF Document Ready' : 'Text File Ready'}
+                      </p>
                     </div>
                   </div>
                   <button onClick={clearFile} className="p-2 hover:bg-indigo-200 rounded-full transition-colors">
@@ -132,11 +148,11 @@ const HiringPortal: React.FC = () => {
             
             <button
               onClick={handleAnalyze}
-              disabled={loading || !resumeText}
+              disabled={loading || !resumeInput}
               className="w-full py-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-lg font-bold tracking-wide flex items-center justify-center gap-2 transition-all shadow-lg"
             >
               {loading ? <Search className="animate-spin w-5 h-5" /> : <Search className="w-5 h-5" />}
-              {loading ? "Analyzing Candidate..." : "Run Merit Evaluation"}
+              {loading ? "Analyzing Document..." : "Run Merit Evaluation"}
             </button>
           </div>
         </div>
@@ -224,7 +240,7 @@ const HiringPortal: React.FC = () => {
             </div>
             <h3 className="text-lg font-bold text-slate-600 mb-2">Awaiting Documentation</h3>
             <p className="text-sm max-w-md mx-auto">
-              Upload candidate resume and portfolio links to generate a transparent, merit-based assessment scorecard.
+              Upload a candidate CV (PDF) to perform a real-time merit analysis against the job description.
             </p>
           </div>
         )}
