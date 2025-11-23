@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import HiringPortal from './components/HiringPortal';
 import BurnoutDashboard from './components/BurnoutDashboard';
 import PerformanceTracker from './components/PerformanceTracker';
+import TrainingRecommendations from './components/TrainingRecommendations';
 import SoftSkillsCoach from './components/SoftSkillsCoach';
 import TechnicalReport from './components/TechnicalReport';
-import { Layout, Users, Activity, MessageSquare, Menu, X, FileCode, BarChart2 } from 'lucide-react';
+import { Layout, Users, Activity, MessageSquare, Menu, X, FileCode, BarChart2, GraduationCap } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'hiring' | 'burnout' | 'performance' | 'coach' | 'tech'>('hiring');
+  const [activeTab, setActiveTab] = useState<'hiring' | 'burnout' | 'performance' | 'training' | 'coach' | 'tech'>('hiring');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const renderContent = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
       case 'hiring': return <HiringPortal />;
       case 'performance': return <PerformanceTracker />;
       case 'burnout': return <BurnoutDashboard />;
+      case 'training': return <TrainingRecommendations />;
       case 'coach': return <SoftSkillsCoach />;
       case 'tech': return <TechnicalReport />;
       default: return <HiringPortal />;
@@ -50,6 +52,7 @@ const App: React.FC = () => {
           <NavItem id="hiring" label="Merit Evaluator" icon={Users} />
           <NavItem id="performance" label="Performance" icon={BarChart2} />
           <NavItem id="burnout" label="Wellness Tracker" icon={Activity} />
+          <NavItem id="training" label="Training & Skills" icon={GraduationCap} />
           <NavItem id="coach" label="Soft Skills Coach" icon={MessageSquare} />
         </nav>
 
@@ -85,6 +88,7 @@ const App: React.FC = () => {
           <NavItem id="hiring" label="Merit Evaluator" icon={Users} />
           <NavItem id="performance" label="Performance" icon={BarChart2} />
           <NavItem id="burnout" label="Wellness Tracker" icon={Activity} />
+          <NavItem id="training" label="Training & Skills" icon={GraduationCap} />
           <NavItem id="coach" label="Soft Skills Coach" icon={MessageSquare} />
           <NavItem id="tech" label="Tech Architecture" icon={FileCode} />
         </div>
@@ -97,6 +101,7 @@ const App: React.FC = () => {
             {activeTab === 'hiring' && "Merit-Based Evaluation Engine"}
             {activeTab === 'performance' && "Workforce Engagement & Scoring"}
             {activeTab === 'burnout' && "Wellness & Biometric Monitoring"}
+            {activeTab === 'training' && "AI Skill Gap Analysis"}
             {activeTab === 'coach' && "AI Performance Coach"}
             {activeTab === 'tech' && "System Documentation"}
           </h1>
@@ -104,6 +109,7 @@ const App: React.FC = () => {
             {activeTab === 'hiring' && "Transparent, skill-focused candidate assessment using context-aware AI."}
             {activeTab === 'performance' && "Track event attendance, ranks, and performance decay."}
             {activeTab === 'burnout' && "Monitor employee health, burnout risks, and workload distribution."}
+            {activeTab === 'training' && "Identify skill bottlenecks and recommend training based on task data."}
             {activeTab === 'coach' && "Interactive roleplay to improve communication skills."}
             {activeTab === 'tech' && "Detailed technical specifications for stakeholders."}
           </p>

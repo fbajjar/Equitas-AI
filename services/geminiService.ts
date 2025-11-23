@@ -41,6 +41,33 @@ export interface TechReportData {
   fairnessMechanisms: string[];
 }
 
+// Static fallback data in case AI generation fails or is interrupted
+const FALLBACK_TECH_REPORT: TechReportData = {
+  title: "Equitas AI Technical Architecture (System Default)",
+  generatedDate: new Date().toLocaleDateString(),
+  systemVersion: "2.5.0",
+  executiveSummary: "Detailed AI generation was interrupted. This is a verified static representation of the system architecture. Equitas AI utilizes a client-side React architecture powered by Google Gemini 2.5 Flash for real-time analysis, ensuring data privacy by processing sensitive information in-memory without persistent storage.",
+  coreComponents: [
+    { name: "User Interface", techStack: "React 19, Tailwind CSS, Lucide React", functionality: "Responsive Client-Side Application", status: "Active" },
+    { name: "Inference Engine", techStack: "Google GenAI SDK (Gemini 2.5 Flash)", functionality: "Multimodal Analysis (PDF/Text)", status: "Active" },
+    { name: "Performance Tracker", techStack: "Deterministic Algorithm (TypeScript)", functionality: "Bias-Free Scoring Calculation", status: "Active" }
+  ],
+  aiImplementation: [
+    { model: "gemini-2.5-flash", role: "Resume Analyzer", reasoning: "Selected for high-speed token processing and multimodal PDF understanding capabilities." },
+    { model: "gemini-2.5-flash", role: "Soft Skills Coach", reasoning: "Low-latency response required for real-time chat simulation." }
+  ],
+  dataPrivacyFramework: [
+    "Zero-Persistence Architecture (RAM only)",
+    "Client-Side File Parsing",
+    "No PII sent to external databases"
+  ],
+  fairnessMechanisms: [
+    "Deterministic Performance Algorithms (No AI Hallucinations)",
+    "Structured JSON Schemas for Hiring to enforce strict output formats",
+    "Anonymized ID generation for candidate review"
+  ]
+};
+
 /**
  * Merit-Based Evaluation Service
  * Evaluates candidates based on Resume + Portfolio Context, providing transparent reasoning.
@@ -190,7 +217,7 @@ export const generateTechReport = async (): Promise<TechReportData> => {
     4. Performance Module: Uses a DETERMINISTIC (Math-based) algorithm for scoring events/attendance, NOT an AI model, to ensure fairness and prevent hallucination in scores.
     5. Privacy: Data is processed in-memory. No external database stores Candidate PII.
     
-    Task: Generate a JSON technical report explaining this architecture to HR executives.
+    Task: Generate a JSON technical report explaining this architecture to HR executives. Keep fields concise to ensure valid JSON output.
   `;
 
   try {
@@ -235,10 +262,16 @@ export const generateTechReport = async (): Promise<TechReportData> => {
         }
       }
     });
-    return JSON.parse(response.text || "{}") as TechReportData;
+    
+    // Robust parsing: strip potential markdown wrappers if they appear (rare in JSON mode but possible)
+    const text = response.text || "{}";
+    const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    
+    return JSON.parse(cleanText) as TechReportData;
   } catch (error) {
-    console.error("Tech Report Failed:", error);
-    throw new Error("Failed to generate tech report");
+    console.error("Tech Report Generation Failed (Returning Fallback):", error);
+    // Return fallback data instead of throwing to avoid UI crash
+    return FALLBACK_TECH_REPORT;
   }
 };
 
